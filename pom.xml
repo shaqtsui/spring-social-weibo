@@ -1,0 +1,43 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<!-- The Basics -->
+	<parent>
+		<groupId>io.spring.platform</groupId>
+		<artifactId>platform-bom</artifactId>
+		<version>1.0.1.RELEASE</version>
+		<relativePath />
+	</parent>
+
+	<groupId>net.gplatform</groupId>
+	<artifactId>spring-social-weibo</artifactId>
+	<version>1.0.0-SNAPSHOT</version>
+	<packaging>jar</packaging>
+
+	<properties>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-social-linkedin</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.belerweb</groupId>
+			<artifactId>weibo4j-oauth2</artifactId>
+			<version>2.1.1-beta2-3</version>
+		</dependency>
+	</dependencies>
+
+	<!-- Environment Settings -->
+	<issueManagement>
+		<system>GitHub</system>
+		<url>https://github.com/zwzwzw/spring-social-weibo/issues</url>
+	</issueManagement>
+	<scm>
+		<connection>scm:git:https://github.com/zwzwzw/spring-social-weibo.git</connection>
+		<developerConnection>scm:git:https://github.com/zwzwzw/spring-social-weibo.git</developerConnection>
+		<url>https://github.com/zwzwzw/spring-social-weibo</url>
+		<tag>HEAD</tag>
+	</scm>
+</project>
