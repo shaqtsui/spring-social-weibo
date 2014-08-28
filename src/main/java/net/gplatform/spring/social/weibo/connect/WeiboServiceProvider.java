@@ -28,7 +28,7 @@ public class WeiboServiceProvider extends AbstractOAuth2ServiceProvider<Weibo> {
 	}
 
 	private static OAuth2Template getOAuth2Template(String clientId, String clientSecret) {
-		OAuth2Template oAuth2Template = new OAuth2Template(clientId, clientSecret, "https://api.weibo.com/oauth2/authorize",
+		OAuth2Template oAuth2Template = new WeiboOAuth2Template(clientId, clientSecret, "https://api.weibo.com/oauth2/authorize",
 				"https://api.weibo.com/oauth2/access_token");
 		oAuth2Template.setUseParametersForClientAuthentication(true);
 		return oAuth2Template;
