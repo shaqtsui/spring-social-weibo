@@ -18,7 +18,6 @@ package net.gplatform.spring.social.weibo.connect;
 import net.gplatform.spring.social.weibo.api.Weibo;
 
 import org.springframework.social.connect.support.OAuth2ConnectionFactory;
-import org.springframework.social.linkedin.api.LinkedIn;
 
 
 public class WeiboConnectionFactory extends OAuth2ConnectionFactory<Weibo> {
