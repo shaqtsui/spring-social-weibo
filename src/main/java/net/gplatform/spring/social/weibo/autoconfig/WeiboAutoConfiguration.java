@@ -72,7 +72,7 @@ public class WeiboAutoConfiguration {
 		@Bean
 		@ConditionalOnMissingBean(Weibo.class)
 		@Scope(value = "request", proxyMode = ScopedProxyMode.INTERFACES)
-		public Object weibo(ConnectionRepository repository) {
+		public Weibo weibo(ConnectionRepository repository) {
 			try {
 				Connection<Weibo> connection = repository.findPrimaryConnection(Weibo.class);
 				return connection != null ? connection.getApi() : null;
