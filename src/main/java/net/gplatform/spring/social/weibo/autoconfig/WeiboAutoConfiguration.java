@@ -3,8 +3,10 @@ package net.gplatform.spring.social.weibo.autoconfig;
 import javax.sql.DataSource;
 
 import net.gplatform.spring.social.weibo.api.Weibo;
+import net.gplatform.spring.social.weibo.connect.JdbcUsersConnectionRepositoryTableCreator;
 import net.gplatform.spring.social.weibo.connect.WeiboConnectionFactory;
 
+import org.apache.commons.beanutils.BeanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,9 +25,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.core.env.Environment;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 import org.springframework.security.crypto.encrypt.Encryptors;
 import org.springframework.security.crypto.encrypt.TextEncryptor;
 import org.springframework.social.config.annotation.ConnectionFactoryConfigurer;
@@ -35,6 +34,7 @@ import org.springframework.social.connect.Connection;
 import org.springframework.social.connect.ConnectionFactory;
 import org.springframework.social.connect.ConnectionFactoryLocator;
 import org.springframework.social.connect.ConnectionRepository;
+import org.springframework.social.connect.ConnectionSignUp;
 import org.springframework.social.connect.UsersConnectionRepository;
 import org.springframework.social.connect.jdbc.JdbcUsersConnectionRepository;
 import org.springframework.social.connect.web.GenericConnectionStatusView;
@@ -57,6 +57,12 @@ public class WeiboAutoConfiguration {
 
 		@Autowired(required = false)
 		DataSource dataSource;
+		
+		@Autowired
+		JdbcUsersConnectionRepositoryTableCreator jdbcUsersConnectionRepositoryTableCreator;
+		
+		@Autowired
+		ConnectionSignUp connectionSignUp;
 
 		@Override
 		public void addConnectionFactories(ConnectionFactoryConfigurer configurer, Environment environment) {
@@ -65,28 +71,20 @@ public class WeiboAutoConfiguration {
 
 		@Override
 		public UsersConnectionRepository getUsersConnectionRepository(ConnectionFactoryLocator connectionFactoryLocator) {
+			UsersConnectionRepository usersConnectionRepository = null;
 			if (dataSource == null) {
-				return super.getUsersConnectionRepository(connectionFactoryLocator);
+				usersConnectionRepository = super.getUsersConnectionRepository(connectionFactoryLocator);
 			} else {
-				JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-				try{
-					jdbcTemplate.queryForList("select count(*) from UserConnection");
-				}catch(Exception e){
-					LOG.debug("Create table UserConnection");
-					try {
-						ResourceDatabasePopulator rdp = new ResourceDatabasePopulator();
-						rdp.addScript(new ClassPathResource("/org/springframework/social/connect/jdbc/JdbcUsersConnectionRepository.sql"));
-						rdp.populate(dataSource.getConnection());
-					} catch (Exception e1) {
-						LOG.error("Error create table UserConnection", e1);
-					}
-				}
+				jdbcUsersConnectionRepositoryTableCreator.createTableIfNotExist();
 				TextEncryptor textEncryptor = Encryptors.noOpText();
-				JdbcUsersConnectionRepository jdbcUsersConnectionRepository = new JdbcUsersConnectionRepository(dataSource, connectionFactoryLocator,
-						textEncryptor);
-				
-				return jdbcUsersConnectionRepository;
+				usersConnectionRepository = new JdbcUsersConnectionRepository(dataSource, connectionFactoryLocator, textEncryptor);
 			}
+			try {
+				BeanUtils.setProperty(usersConnectionRepository, "connectionSignUp", connectionSignUp);
+			} catch (Exception e) {
+				LOG.error("Error config ConnectionSignUp", e);
+			}
+			return usersConnectionRepository;
 		}
 
 		@Override
