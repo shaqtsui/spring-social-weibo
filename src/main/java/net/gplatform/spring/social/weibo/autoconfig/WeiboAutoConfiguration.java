@@ -23,6 +23,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.core.env.Environment;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 import org.springframework.security.crypto.encrypt.Encryptors;
 import org.springframework.security.crypto.encrypt.TextEncryptor;
 import org.springframework.social.config.annotation.ConnectionFactoryConfigurer;
@@ -51,20 +54,39 @@ public class WeiboAutoConfiguration {
 	protected static class WeiboAutoConfigurationAdapter extends SocialConfigurerAdapter implements EnvironmentAware {
 		private static final Logger LOG = LoggerFactory.getLogger(WeiboAutoConfigurationAdapter.class);
 		private RelaxedPropertyResolver properties;
-		
-		@Autowired
+
+		@Autowired(required = false)
 		DataSource dataSource;
 
 		@Override
 		public void addConnectionFactories(ConnectionFactoryConfigurer configurer, Environment environment) {
 			configurer.addConnectionFactory(createConnectionFactory(this.properties));
 		}
-		
+
 		@Override
 		public UsersConnectionRepository getUsersConnectionRepository(ConnectionFactoryLocator connectionFactoryLocator) {
-			TextEncryptor textEncryptor = Encryptors.noOpText();
-			JdbcUsersConnectionRepository jdbcUsersConnectionRepository =  new JdbcUsersConnectionRepository(dataSource, connectionFactoryLocator, textEncryptor);
-			return jdbcUsersConnectionRepository;
+			if (dataSource == null) {
+				return super.getUsersConnectionRepository(connectionFactoryLocator);
+			} else {
+				JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
+				try{
+					jdbcTemplate.queryForList("select count(*) from UserConnection");
+				}catch(Exception e){
+					LOG.debug("Create table UserConnection");
+					try {
+						ResourceDatabasePopulator rdp = new ResourceDatabasePopulator();
+						rdp.addScript(new ClassPathResource("/org/springframework/social/connect/jdbc/JdbcUsersConnectionRepository.sql"));
+						rdp.populate(dataSource.getConnection());
+					} catch (Exception e1) {
+						LOG.error("Error create table UserConnection", e1);
+					}
+				}
+				TextEncryptor textEncryptor = Encryptors.noOpText();
+				JdbcUsersConnectionRepository jdbcUsersConnectionRepository = new JdbcUsersConnectionRepository(dataSource, connectionFactoryLocator,
+						textEncryptor);
+				
+				return jdbcUsersConnectionRepository;
+			}
 		}
 
 		@Override
