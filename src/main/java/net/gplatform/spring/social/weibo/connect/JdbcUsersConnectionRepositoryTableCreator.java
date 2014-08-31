@@ -8,9 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
-import org.springframework.stereotype.Component;
 
-@Component
 public class JdbcUsersConnectionRepositoryTableCreator {
 	private static final Logger LOG = LoggerFactory.getLogger(JdbcUsersConnectionRepositoryTableCreator.class);
 

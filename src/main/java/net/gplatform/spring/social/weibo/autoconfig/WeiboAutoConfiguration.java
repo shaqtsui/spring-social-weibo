@@ -4,6 +4,7 @@ import javax.sql.DataSource;
 
 import net.gplatform.spring.social.weibo.api.Weibo;
 import net.gplatform.spring.social.weibo.connect.JdbcUsersConnectionRepositoryTableCreator;
+import net.gplatform.spring.social.weibo.connect.SimpleConnectionSignUp;
 import net.gplatform.spring.social.weibo.connect.WeiboConnectionFactory;
 
 import org.apache.commons.beanutils.BeanUtils;
@@ -57,10 +58,10 @@ public class WeiboAutoConfiguration {
 
 		@Autowired(required = false)
 		DataSource dataSource;
-		
+
 		@Autowired
 		JdbcUsersConnectionRepositoryTableCreator jdbcUsersConnectionRepositoryTableCreator;
-		
+
 		@Autowired
 		ConnectionSignUp connectionSignUp;
 
@@ -124,6 +125,17 @@ public class WeiboAutoConfiguration {
 		@ConditionalOnProperty(prefix = "spring.social.", value = "auto-connection-views")
 		public View weiboConnectView() {
 			return new GenericConnectionStatusView("weibo", "Weibo");
+		}
+
+		@Bean
+		public JdbcUsersConnectionRepositoryTableCreator jdbcUsersConnectionRepositoryTableCreator() {
+			return new JdbcUsersConnectionRepositoryTableCreator();
+		}
+
+		@Bean
+		@ConditionalOnMissingBean(ConnectionSignUp.class)
+		public ConnectionSignUp connectionSignUp() {
+			return new SimpleConnectionSignUp();
 		}
 
 	}
