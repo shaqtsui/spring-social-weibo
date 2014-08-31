@@ -44,13 +44,13 @@ public class WeiboAdapter implements ApiAdapter<Weibo> {
 	@Override
 	public void setConnectionValues(Weibo api, ConnectionValues values) {
 		try {
-			String uid = api.accountOperations().getUid().toString();
+			String uid = api.accountOperations().getUid().getString("uid");
 			User user = api.usersOperations().showUserById(uid);
 			values.setProviderUserId(user.getId() + "");
 			values.setDisplayName(user.getScreenName());
 			values.setProfileUrl(user.getUrl());
 			values.setImageUrl(user.getAvatarLarge());
-		} catch (WeiboException e) {
+		} catch (Exception e) {
 			LOG.error("error setConnectionValues", e);
 		}
 	}
@@ -58,10 +58,10 @@ public class WeiboAdapter implements ApiAdapter<Weibo> {
 	@Override
 	public UserProfile fetchUserProfile(Weibo api) {
 		try {
-			String uid = api.accountOperations().getUid().toString();
+			String uid = api.accountOperations().getUid().getString("uid");
 			User user = api.usersOperations().showUserById(uid);
 			return new UserProfileBuilder().setName(user.getName()).setUsername(uid).build();
-		} catch (WeiboException e) {
+		} catch (Exception e) {
 			LOG.error("error fetchUserProfile", e);
 		}
 		return null;
