@@ -1,10 +1,13 @@
 package net.gplatform.spring.social.weibo.autoconfig;
 
+import javax.sql.DataSource;
+
 import net.gplatform.spring.social.weibo.api.Weibo;
 import net.gplatform.spring.social.weibo.connect.WeiboConnectionFactory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -20,12 +23,17 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.core.env.Environment;
+import org.springframework.security.crypto.encrypt.Encryptors;
+import org.springframework.security.crypto.encrypt.TextEncryptor;
 import org.springframework.social.config.annotation.ConnectionFactoryConfigurer;
 import org.springframework.social.config.annotation.EnableSocial;
 import org.springframework.social.config.annotation.SocialConfigurerAdapter;
 import org.springframework.social.connect.Connection;
 import org.springframework.social.connect.ConnectionFactory;
+import org.springframework.social.connect.ConnectionFactoryLocator;
 import org.springframework.social.connect.ConnectionRepository;
+import org.springframework.social.connect.UsersConnectionRepository;
+import org.springframework.social.connect.jdbc.JdbcUsersConnectionRepository;
 import org.springframework.social.connect.web.GenericConnectionStatusView;
 import org.springframework.web.servlet.View;
 
@@ -43,10 +51,20 @@ public class WeiboAutoConfiguration {
 	protected static class WeiboAutoConfigurationAdapter extends SocialConfigurerAdapter implements EnvironmentAware {
 		private static final Logger LOG = LoggerFactory.getLogger(WeiboAutoConfigurationAdapter.class);
 		private RelaxedPropertyResolver properties;
+		
+		@Autowired
+		DataSource dataSource;
 
 		@Override
 		public void addConnectionFactories(ConnectionFactoryConfigurer configurer, Environment environment) {
 			configurer.addConnectionFactory(createConnectionFactory(this.properties));
+		}
+		
+		@Override
+		public UsersConnectionRepository getUsersConnectionRepository(ConnectionFactoryLocator connectionFactoryLocator) {
+			TextEncryptor textEncryptor = Encryptors.noOpText();
+			JdbcUsersConnectionRepository jdbcUsersConnectionRepository =  new JdbcUsersConnectionRepository(dataSource, connectionFactoryLocator, textEncryptor);
+			return jdbcUsersConnectionRepository;
 		}
 
 		@Override
